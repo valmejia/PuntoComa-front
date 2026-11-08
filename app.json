@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Front",
+    "name": "Punto&Coma",
     "slug": "Front",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,17 +11,21 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#4A2878",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "single"
     },
     "plugins": [
+      "expo-router",
+      "expo-secure-store",
       "expo-font"
-    ]
+    ],
+    "scheme": "puntocoma"
   }
 }

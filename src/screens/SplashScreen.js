@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,18 +6,11 @@ import { COLORS } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
-export default function SplashScreen({ navigation }) {
-
-    // Simulamos una carga de 3 segundos y luego pasamos al Registro (o Login)
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            // Cambia 'Register' por 'Login' cuando tengas esa pantalla lista
-            navigation.replace('Register');
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, [navigation]);
-
+/**
+ * Pantalla de bienvenida. La muestra src/app/_layout.js mientras se cargan las fuentes
+ * y se valida la sesión guardada; después la app pasa al login o al catálogo según la sesión.
+ */
+export default function SplashScreen() {
     return (
         <LinearGradient
             // Degradado sutil de lila a blanco (puedes ajustar los colores aquí)
@@ -40,10 +33,9 @@ export default function SplashScreen({ navigation }) {
 
             {/* CENTRO: Logo, Título y Frase */}
             <View style={styles.centerContent}>
-                {/* Aquí irá tu imagen. Asegúrate de tener logo.png en src/assets */}
                 <View style={styles.logoWrapper}>
                     <Image
-                        source={require('../assets/logo.jpg')}
+                        source={require('../assets/logo.png')}
                         style={styles.logoImage}
                         resizeMode="contain"
                     />
