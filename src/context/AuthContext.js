@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { onSesionExpirada, setToken } from '../api/client';
+import { ApiError, onSesionExpirada, setToken } from '../api/client';
 import { authApi } from '../api/services';
 import { borrarSesion, guardarSesion, leerSesion } from '../utils/sessionStorage';
 
@@ -39,11 +39,19 @@ export function AuthProvider({ children }) {
     })();
   }, [cerrarSesion]);
 
-  const iniciarSesion = useCallback(async (email, password) => {
+  /**
+   * recordar: si es false la sesión no se guarda en el dispositivo (se pierde al cerrar la app).
+   * requiereStaff: la persona eligió "Vendedor / Admin" en el login; una cuenta de lector no puede entrar así.
+   */
+  const iniciarSesion = useCallback(async (email, password, { recordar = true, requiereStaff = false } = {}) => {
     const res = await authApi.login(email.trim(), password);
+    if (requiereStaff && res.usuario.rol === 'USUARIO') {
+      throw new ApiError(403, 'Esta cuenta es de lector. Elige la pestaña "Lector" para entrar.');
+    }
     const nueva = { token: res.token, usuario: res.usuario };
     setToken(res.token);
-    await guardarSesion(nueva);
+    if (recordar) await guardarSesion(nueva);
+    else await borrarSesion();
     setSesion(nueva);
     return res.usuario;
   }, []);

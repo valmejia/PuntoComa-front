@@ -64,9 +64,9 @@ export default function RegisterScreen() {
             >
                 <TouchableOpacity
                     style={styles.backButton}
-                    onPress={() => router.replace('/login')}
+                    onPress={() => (router.canGoBack() ? router.back() : router.replace('/bienvenida'))}
                     accessibilityRole="button"
-                    accessibilityLabel="Volver a iniciar sesión"
+                    accessibilityLabel="Volver"
                 >
                     <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
                 </TouchableOpacity>
@@ -150,6 +150,13 @@ export default function RegisterScreen() {
                 </TouchableOpacity>
                 {errores.terms ? <Text style={styles.termsError}>{errores.terms}</Text> : null}
 
+                <View style={styles.loginContainer}>
+                    <Text style={styles.loginText}>¿Ya tienes una cuenta activa? </Text>
+                    <TouchableOpacity onPress={() => router.replace('/login')} accessibilityRole="link">
+                        <Text style={styles.loginLink}>Inicia sesión</Text>
+                    </TouchableOpacity>
+                </View>
+
                 <TouchableOpacity
                     style={[styles.button, enviando && styles.buttonDisabled]}
                     onPress={handleRegister}
@@ -162,12 +169,6 @@ export default function RegisterScreen() {
                         : <Text style={styles.buttonText}>Crear cuenta →</Text>}
                 </TouchableOpacity>
 
-                <View style={styles.loginContainer}>
-                    <Text style={styles.loginText}>¿Ya tienes una cuenta activa? </Text>
-                    <TouchableOpacity onPress={() => router.replace('/login')} accessibilityRole="link">
-                        <Text style={styles.loginLink}>Inicia sesión</Text>
-                    </TouchableOpacity>
-                </View>
 
             </ScrollView>
         </KeyboardAvoidingView>
@@ -263,6 +264,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-start',
         marginBottom: 8,
+        padding: 14,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: '#E4D9F5',
+        backgroundColor: '#FBF9FF',
     },
     termsText: {
         flex: 1,
@@ -276,7 +282,7 @@ const styles = StyleSheet.create({
         fontFamily: 'PlusJakartaSans_400Regular',
         fontSize: 13,
         color: COLORS.error,
-        marginLeft: 34,
+        marginLeft: 4,
     },
     linkText: {
         fontFamily: 'PlusJakartaSans_600SemiBold',
@@ -288,10 +294,15 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         minHeight: 54,
         justifyContent: 'center',
-        borderRadius: 25,
+        borderRadius: 999,
         alignItems: 'center',
         marginTop: 17,
-        marginBottom: 20,
+        marginBottom: 30,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        elevation: 4,
     },
     buttonDisabled: {
         opacity: 0.7,
@@ -305,7 +316,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         flexWrap: 'wrap',
-        marginBottom: 30,
+        marginTop: 20,
     },
     loginText: {
         fontFamily: 'PlusJakartaSans_400Regular',

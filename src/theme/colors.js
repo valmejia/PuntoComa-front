@@ -31,6 +31,21 @@ export const colors = {
   danger: COLORS.error,
   dangerLight: '#FCE8E6',
   white: '#FFFFFF',
+  // Superficies del Figma
+  lilac: '#F6F1FF',        // relleno de chips, campos y bloques informativos
+  lilacStrong: '#EBE1F5',  // pills / etiquetas
+  cardBorder: '#ECE4F7',
+  amber: COLORS.tertiary,
+  amberLight: '#FEF3DC',
+};
+
+/** Sombra suave de las tarjetas del diseño. */
+export const shadow = {
+  shadowColor: '#502583',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.06,
+  shadowRadius: 12,
+  elevation: 2,
 };
 
 // Tipografías del diseño (se cargan en src/app/_layout.js).

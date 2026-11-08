@@ -17,21 +17,29 @@ La app busca el backend en el puerto **8080**:
 
 Usuarios de prueba que crea el backend: `admin@puntocoma.com / Admin12345` y `vendedor@puntocoma.com / Vendedor123`.
 
+## Diseño (UX/UI)
+
+Las pantallas siguen el prototipo de Figma (CA-08): paleta `COLORS` y tipografías Playfair Display / Plus Jakarta Sans
+definidas en `src/theme/colors.js`. Pantallas de los Sprints 1 y 2: Splash, Bienvenida, Iniciar Sesión, Registro,
+Catálogo (Inicio), Detalle, Préstamos y Devoluciones, Biblioteca (inventario propio), Control de Circulación y Usuarios.
+
 ## Estructura
 
 ```
 src/
   app/                 Rutas (Expo Router)
-    (auth)/            login, registro (sólo sin sesión)
-    (tabs)/            catálogo, mis libros, préstamos, gestión*, usuarios*, perfil
+    (auth)/            bienvenida, login, registro (sólo sin sesión)
+    (tabs)/            inicio (catálogo), préstamos, biblioteca, gestión*, perfil
+    admin/usuarios.js  usuarios y roles (sólo ADMIN, se abre desde Gestión)
     libro/[id].js      detalle del libro y solicitud de préstamo
     publicar.js        publicar / editar libro
   api/                 cliente HTTP y servicios del backend
+  screens/             Splash, Bienvenida, Login y Registro (diseño de Figma)
   components/          componentes reutilizables
   context/AuthContext  sesión JWT (expo-secure-store; localStorage en web)
   hooks/ utils/ theme/
 ```
-\* *Gestión* sólo para VENDEDOR/ADMIN, *Usuarios* sólo para ADMIN.
+\* *Gestión* (Control de Circulación) sólo para VENDEDOR/ADMIN.
 
 ## Funcionalidad por sprint
 

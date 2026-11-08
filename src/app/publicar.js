@@ -6,7 +6,8 @@ import { Button } from '../components/Button';
 import { Segmented } from '../components/Chip';
 import { ErrorBanner, ErrorState, Loading } from '../components/States';
 import { TextField } from '../components/TextField';
-import { colors, spacing, fonts } from '../theme/colors';
+import { colors, fonts, radius, shadow, spacing } from '../theme/colors';
+import { ScreenTitle } from '../components/ScreenTitle';
 import { avisar } from '../utils/dialogs';
 
 const VACIO = {
@@ -104,10 +105,15 @@ export default function PublicarScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Stack.Screen options={{ title: editando ? 'Editar libro' : 'Publicar libro' }} />
+      <Stack.Screen options={{ title: '' }} />
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <ErrorBanner message={error} />
 
+        <ScreenTitle
+          title={editando ? 'Editar título' : 'Añadir título'}
+          subtitle={editando ? 'Actualiza los datos y el stock del libro' : 'Publica un libro para venta, préstamo o ambos'}
+        />
+        <View style={styles.card}>
         <Text style={styles.section}>¿Cómo lo ofreces?</Text>
         <Segmented
           value={form.tipo}
@@ -120,6 +126,8 @@ export default function PublicarScreen() {
           options={[{ value: 'FISICO', label: 'Físico' }, { value: 'DIGITAL', label: 'Digital (PDF/EPUB)' }]}
         />
 
+        </View>
+        <View style={styles.card}>
         <Text style={styles.section}>Datos del libro</Text>
         <TextField label="Título *" value={form.titulo} onChangeText={set('titulo')} placeholder="Ej. Cien años de soledad" error={errores.titulo} />
         <TextField label="Autor *" value={form.autor} onChangeText={set('autor')} placeholder="Ej. Gabriel García Márquez" error={errores.autor} />
@@ -133,6 +141,8 @@ export default function PublicarScreen() {
           <TextField style={styles.flex} label={form.formato === 'DIGITAL' ? 'Copias / licencias *' : 'Ejemplares *'} value={form.stock} onChangeText={set('stock')} keyboardType="number-pad" error={errores.stock} />
         </View>
 
+        </View>
+        <View style={styles.card}>
         <Text style={styles.section}>Opcional</Text>
         <TextField label="Editorial" value={form.editorial} onChangeText={set('editorial')} error={errores.editorial} />
         <View style={styles.row}>
@@ -141,6 +151,7 @@ export default function PublicarScreen() {
         </View>
         <TextField label="URL de la portada" value={form.portadaUrl} onChangeText={set('portadaUrl')} placeholder="https://..." autoCapitalize="none" keyboardType="url" error={errores.portadaUrl} />
 
+        </View>
         <Button title={editando ? 'Guardar cambios' : 'Publicar'} icon="cloud-upload-outline" onPress={guardar} loading={guardando} />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -150,6 +161,10 @@ export default function PublicarScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl, maxWidth: 720, width: '100%', alignSelf: 'center' },
-  section: { fontSize: 15, fontFamily: fonts.bold, color: colors.primary, marginTop: spacing.sm },
+  section: { fontSize: 16, fontFamily: fonts.title, color: colors.primary },
+  card: {
+    gap: spacing.lg, padding: spacing.lg, backgroundColor: colors.surface, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.cardBorder, ...shadow,
+  },
   row: { flexDirection: 'row', gap: spacing.md },
 });

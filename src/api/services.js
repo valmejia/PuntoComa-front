@@ -6,6 +6,11 @@ export const authApi = {
   me: () => request('/api/auth/me'),
 };
 
+export const publicoApi = {
+  /** { titulos, autores, lectores, destacados: [libro] } — no requiere sesión. */
+  portada: () => request('/api/publico/portada', { auth: false }),
+};
+
 export const librosApi = {
   /** filtros: { q, autor, genero, formato, tipo, disponible } */
   catalogo: (filtros) => request('/api/libros', { query: filtros }),

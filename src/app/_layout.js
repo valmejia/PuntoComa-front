@@ -41,9 +41,10 @@ function RootNavigator() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: colors.white,
-        headerTitleStyle: { fontFamily: fonts.bold },
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.primary,
+        headerTitleStyle: { fontFamily: fonts.title, color: colors.primary },
+        headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.background },
       }}
     >
@@ -53,10 +54,11 @@ function RootNavigator() {
       </Stack.Protected>
 
       {/* Con sesión: la app según el rol */}
-      <Stack.Protected guard={!!sesion} redirectTo="/login">
+      <Stack.Protected guard={!!sesion} redirectTo="/bienvenida">
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="libro/[id]" options={{ title: 'Detalle del libro' }} />
-        <Stack.Screen name="publicar" options={{ title: 'Publicar libro', presentation: 'modal' }} />
+        <Stack.Screen name="publicar" options={{ title: 'Añadir título', presentation: 'modal' }} />
+        <Stack.Screen name="admin/usuarios" options={{ title: '' }} />
       </Stack.Protected>
     </Stack>
   );

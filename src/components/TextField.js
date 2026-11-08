@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors, radius, fonts } from '../theme/colors';
+import { colors, fonts } from '../theme/colors';
 
 export const TextField = forwardRef(function TextField({ label, error, hint, style, multiline, ...props }, ref) {
   return (
@@ -24,15 +24,15 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontFamily: fonts.semibold, color: colors.text },
   input: {
     fontFamily: fonts.regular,
-    minHeight: 48,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 16,
+    minHeight: 52,
+    borderWidth: 1,
+    borderColor: '#E4D9F5',
+    borderRadius: 14,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 15,
     color: colors.text,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FBF9FF',
   },
   multiline: { minHeight: 96, textAlignVertical: 'top' },
   inputError: { borderColor: colors.danger },
