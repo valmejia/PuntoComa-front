@@ -1,60 +1,73 @@
 import React, { useState } from 'react';
 import {
-    View, Text, TextInput, TouchableOpacity, StyleSheet,
-    Alert, ScrollView, KeyboardAvoidingView, Platform
+    View, Text, TouchableOpacity, StyleSheet,
+    ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../theme/colors'; // Importamos los colores
+import { IconInput } from '../components/IconInput';
+import { useAuth } from '../context/AuthContext';
 
-export default function RegisterScreen({ navigation }) {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** HU-01 / CU-01: registro (rol USUARIO por defecto). Al terminar inicia sesión automáticamente. */
+export default function RegisterScreen() {
+    const router = useRouter();
+    const insets = useSafeAreaInsets();
+    const { registrarse } = useAuth();
     const [nombre, setNombre] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
+    const [errores, setErrores] = useState({});
+    const [errorGeneral, setErrorGeneral] = useState(null);
+    const [enviando, setEnviando] = useState(false);
+
+    // Al escribir en un campo se borra su error.
+    const cambiar = (setter, campo) => (valor) => {
+        setter(valor);
+        setErrores((e) => (e[campo] ? { ...e, [campo]: undefined } : e));
+    };
 
     const handleRegister = async () => {
-        if (!nombre || !email || !password || !confirmPassword) {
-            Alert.alert('Error', 'Por favor llena todos los campos');
-            return;
-        }
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Las contraseñas no coinciden');
-            return;
-        }
-        if (!termsAccepted) {
-            Alert.alert('Error', 'Debes aceptar los términos y condiciones');
-            return;
-        }
+        const e = {};
+        if (!nombre.trim()) e.nombre = 'El nombre es obligatorio';
+        if (!EMAIL_RE.test(email.trim())) e.email = 'El formato del email no es válido';
+        if (password.length < 8) e.password = 'La contraseña debe tener al menos 8 caracteres';
+        if (confirmPassword !== password) e.confirmPassword = 'Las contraseñas no coinciden';
+        if (!termsAccepted) e.terms = 'Debes aceptar los términos y condiciones';
+        setErrores(e);
+        setErrorGeneral(null);
+        if (Object.keys(e).length) return;
 
+        setEnviando(true);
         try {
-            const response = await fetch('http://192.168.1.25:8080/api/usuarios/registro', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, email, password }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                Alert.alert('¡Éxito!', `Usuario ${data.nombre} registrado`);
-                setNombre(''); setEmail(''); setPassword(''); setConfirmPassword(''); setTermsAccepted(false);
-            } else {
-                Alert.alert('Error del servidor', JSON.stringify(data));
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'No se pudo conectar con el servidor');
+            await registrarse({ nombre, email, password });
+            // Con la sesión iniciada, el layout raíz lleva al catálogo.
+        } catch (err) {
+            if (err.errores) setErrores(err.errores);
+            setErrorGeneral(err.message);
+        } finally {
+            setEnviando(false);
         }
     };
 
     return (
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation?.goBack()}>
+            <ScrollView
+                contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+            >
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => router.replace('/login')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Volver a iniciar sesión"
+                >
                     <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
                 </TouchableOpacity>
 
@@ -70,82 +83,88 @@ export default function RegisterScreen({ navigation }) {
                     Únete a la comunidad de lectores apasionados y libros independientes.
                 </Text>
 
-                <Text style={styles.label}>Nombre completo</Text>
-                <View style={styles.inputContainer}>
-                    <Ionicons name="person-outline" size={20} color={COLORS.textLight} style={styles.icon} />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Ej. Gabriel García M."
-                        placeholderTextColor={COLORS.textLight}
-                        value={nombre}
-                        onChangeText={setNombre}
-                    />
-                </View>
+                {errorGeneral ? (
+                    <View style={styles.errorBanner} accessibilityRole="alert">
+                        <Ionicons name="alert-circle" size={18} color={COLORS.error} />
+                        <Text style={styles.errorBannerText}>{errorGeneral}</Text>
+                    </View>
+                ) : null}
 
-                <Text style={styles.label}>Correo electrónico</Text>
-                <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={20} color={COLORS.textLight} style={styles.icon} />
-                    <TextInput
-                        style={styles.input}
+                <View style={styles.fields}>
+                    <IconInput
+                        label="Nombre completo"
+                        icon="person-outline"
+                        placeholder="Ej. Gabriel García M."
+                        autoComplete="name"
+                        value={nombre}
+                        onChangeText={cambiar(setNombre, 'nombre')}
+                        error={errores.nombre}
+                    />
+                    <IconInput
+                        label="Correo electrónico"
+                        icon="mail-outline"
                         placeholder="tu.lectura@puntocoma.es"
-                        placeholderTextColor={COLORS.textLight}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        autoComplete="email"
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={cambiar(setEmail, 'email')}
+                        error={errores.email}
                     />
-                </View>
-
-                <Text style={styles.label}>Contraseña</Text>
-                <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.icon} />
-                    <TextInput
-                        style={styles.input}
+                    <IconInput
+                        label="Contraseña"
+                        icon="lock-closed-outline"
                         placeholder="Mínimo 8 caracteres"
-                        placeholderTextColor={COLORS.textLight}
-                        secureTextEntry={!showPassword}
+                        password
+                        autoComplete="new-password"
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={cambiar(setPassword, 'password')}
+                        error={errores.password}
                     />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color={COLORS.textLight} />
-                    </TouchableOpacity>
-                </View>
-
-                <Text style={styles.label}>Confirmar contraseña</Text>
-                <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.icon} />
-                    <TextInput
-                        style={styles.input}
+                    <IconInput
+                        label="Confirmar contraseña"
+                        icon="lock-closed-outline"
                         placeholder="Repite tu contraseña"
-                        placeholderTextColor={COLORS.textLight}
-                        secureTextEntry={!showConfirmPassword}
+                        password
+                        autoComplete="new-password"
                         value={confirmPassword}
-                        onChangeText={setConfirmPassword}
+                        onChangeText={cambiar(setConfirmPassword, 'confirmPassword')}
+                        error={errores.confirmPassword}
                     />
-                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        <Ionicons name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} size={20} color={COLORS.textLight} />
-                    </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity style={styles.termsContainer} onPress={() => setTermsAccepted(!termsAccepted)}>
+                <TouchableOpacity
+                    style={styles.termsContainer}
+                    onPress={() => { setTermsAccepted(!termsAccepted); setErrores((e) => ({ ...e, terms: undefined })); }}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: termsAccepted }}
+                >
                     <Ionicons
                         name={termsAccepted ? "checkbox" : "square-outline"}
                         size={24}
-                        color={termsAccepted ? COLORS.primary : COLORS.textLight}
+                        color={termsAccepted ? COLORS.primary : errores.terms ? COLORS.error : COLORS.textLight}
                     />
                     <Text style={styles.termsText}>
                         Acepto los <Text style={styles.linkText}>términos de servicio</Text> y el acuerdo de préstamos digitales protegidos por DRM justo.
                     </Text>
                 </TouchableOpacity>
+                {errores.terms ? <Text style={styles.termsError}>{errores.terms}</Text> : null}
 
-                <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                    <Text style={styles.buttonText}>Crear cuenta →</Text>
+                <TouchableOpacity
+                    style={[styles.button, enviando && styles.buttonDisabled]}
+                    onPress={handleRegister}
+                    disabled={enviando}
+                    accessibilityRole="button"
+                    accessibilityLabel="Crear cuenta"
+                >
+                    {enviando
+                        ? <ActivityIndicator color={COLORS.surface} />
+                        : <Text style={styles.buttonText}>Crear cuenta →</Text>}
                 </TouchableOpacity>
 
                 <View style={styles.loginContainer}>
                     <Text style={styles.loginText}>¿Ya tienes una cuenta activa? </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.replace('/login')} accessibilityRole="link">
                         <Text style={styles.loginLink}>Inicia sesión</Text>
                     </TouchableOpacity>
                 </View>
@@ -163,7 +182,9 @@ const styles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         padding: 24,
-        paddingTop: 60,
+        width: '100%',
+        maxWidth: 480,
+        alignSelf: 'center',
     },
     backButton: {
         backgroundColor: COLORS.surface,
@@ -219,36 +240,29 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         lineHeight: 20,
     },
-    label: {
-        fontFamily: 'PlusJakartaSans_600SemiBold',
-        fontSize: 14,
-        color: COLORS.neutral,
-        marginBottom: 8,
-    },
-    inputContainer: {
+    errorBanner: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: COLORS.surface,
+        gap: 8,
+        backgroundColor: '#FCE8E6',
         borderRadius: 10,
-        paddingHorizontal: 15,
+        padding: 12,
         marginBottom: 20,
-        height: 50,
-        borderWidth: 1,
-        borderColor: COLORS.border,
     },
-    icon: {
-        marginRight: 10,
-    },
-    input: {
+    errorBannerText: {
         flex: 1,
-        fontFamily: 'PlusJakartaSans_400Regular',
+        fontFamily: 'PlusJakartaSans_600SemiBold',
         fontSize: 14,
-        color: COLORS.neutral,
+        color: COLORS.error,
+    },
+    fields: {
+        gap: 20,
+        marginBottom: 25,
     },
     termsContainer: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 25,
+        marginBottom: 8,
     },
     termsText: {
         flex: 1,
@@ -258,6 +272,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         lineHeight: 18,
     },
+    termsError: {
+        fontFamily: 'PlusJakartaSans_400Regular',
+        fontSize: 13,
+        color: COLORS.error,
+        marginLeft: 34,
+    },
     linkText: {
         fontFamily: 'PlusJakartaSans_600SemiBold',
         color: COLORS.primary,
@@ -266,9 +286,15 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: COLORS.primary,
         paddingVertical: 16,
+        minHeight: 54,
+        justifyContent: 'center',
         borderRadius: 25,
         alignItems: 'center',
+        marginTop: 17,
         marginBottom: 20,
+    },
+    buttonDisabled: {
+        opacity: 0.7,
     },
     buttonText: {
         fontFamily: 'PlusJakartaSans_700Bold',
@@ -278,6 +304,7 @@ const styles = StyleSheet.create({
     loginContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
+        flexWrap: 'wrap',
         marginBottom: 30,
     },
     loginText: {
